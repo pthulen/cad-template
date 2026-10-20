@@ -1,0 +1,18 @@
+# Named size variants. Each key overrides a field of design/params.py:Params;
+# anything left out keeps the default there. Units: mm.
+# scripts/export.py builds every variant listed here.
+
+small:
+  inner_width: 40
+  inner_depth: 30
+  inner_height: 20
+  label: SMALL
+  label_size: 7
+
+large:
+  inner_width: 90
+  inner_depth: 60
+  inner_height: 35
+  wall: 2.4
+  label: LARGE
+  label_size: 10

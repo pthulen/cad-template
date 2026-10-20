@@ -1,0 +1,54 @@
+# pyproject.toml is Python's package.json. uv reads it; uv.lock is the
+# equivalent of package-lock.json and pins every transitive dependency.
+[project]
+name = "cad-template"
+version = "0.1.0"
+description = "Parametric 3D-printable product design (build123d)"
+readme = "README.md"
+# Exactly one minor version, matching .python-version. OCP (the CAD kernel)
+# ships compiled wheels per Python version, so don't widen this casually.
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "build123d>=0.13.0",
+    "ocp-vscode>=4.2.0",
+    "pyyaml>=6.0.3",
+]
+
+# Like devDependencies. `uv sync` installs the "dev" group by default.
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+# The build backend lets `uv sync` install the design/ folder into .venv as
+# an editable package (like `npm link`), so `from design import ...` works
+# from scripts/, tests/ and VS Code without any sys.path hacks.
+[build-system]
+requires = ["uv_build>=0.13.2,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv]
+# Always use a uv-downloaded Python, never Homebrew's or the system's, even
+# when their version matches .python-version. Keeps every machine identical.
+python-preference = "only-managed"
+
+[tool.uv.build-backend]
+module-name = "design"
+module-root = ""   # design/ sits at the repo root, not under src/
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    # lib3mf (used for .3mf export) triggers a harmless ctypes warning on 3.14.
+    "ignore::DeprecationWarning:lib3mf.*",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# E/F = pycodestyle + pyflakes (the defaults), I = sort imports, UP = modern syntax.
+select = ["E", "F", "I", "UP"]
+# build123d is designed for `from build123d import *`; allow it.
+ignore = ["F403", "F405"]

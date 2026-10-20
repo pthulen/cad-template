@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # OCP (build123d's CAD kernel) links against libGL.so.1 even when
+      # nothing is drawn on screen; the slim runner image may not have it.
+      - name: Install OpenGL runtime for OCP
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgl1
+
+      # Installs uv; uv then installs the Python from .python-version.
+      # setup-uv publishes no floating major tag, so pin the exact release.
+      - uses: astral-sh/setup-uv@v10.3.0
+
+      # --locked fails if uv.lock is out of date with pyproject.toml
+      # (like `npm ci`), so CI tests exactly what is committed.
+      - run: uv sync --locked
+
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
